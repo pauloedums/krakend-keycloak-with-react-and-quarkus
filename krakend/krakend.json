@@ -1,0 +1,166 @@
+{
+  "$schema": "https://www.krakend.io/schema/v3.json",
+  "version": 3,
+  "name": "Krakend - API Gateway",
+  "timeout": "300000ms",
+  "output_encoding": "no-op",
+  "extra_config": {
+    "router": {
+      "auto_options": true,
+      "hide_version_header": true
+    },
+    "security/cors": {
+      "allow_origins": ["*"],
+      "allow_headers": [
+        "Content-Length",
+        "Content-Type",
+        "Authorization"
+      ],
+      "max_age": "12h",
+      "debug": true
+    },
+    "plugin/http-server": {
+      "name": [
+        "jwk-aggregator"
+      ],
+      "jwk-aggregator": {
+        "port": 8080,
+        "origins": [
+          "http://oauth:8080/realms/krakend/protocol/openid-connect/certs"
+        ]
+      }
+    },
+    "documentation/openapi": {
+      "version": "1.0",
+      "description": "The creation of a generic login system",
+      "contact_name": "Paulo Marques",
+      "contact_email": "pauloedums@gmail.com",
+      "license_name": "GNU GPLv3",
+      "license_url": "https://choosealicense.com/licenses/gpl-3.0/"
+    }
+  },
+  "endpoints": [
+    {
+      "endpoint": "/v1/user",
+      "method": "GET",
+      "extra_config": {
+        "documentation/openapi": {
+          "version": "1.0",
+          "summary": "Get user details",
+          "description": "Endpoint to get user details from the oauth"
+        },
+        "auth/validator": {
+          "alg": "RS256",
+          "jwk_url": "http://oauth:8080/realms/krakend/protocol/openid-connect/certs",
+          "disable_jwk_security": true
+        }
+      },
+      "input_headers": ["Authorization"],
+      "backend": [
+        {
+          "url_pattern": "/users/get-user",
+          "method": "GET",
+          "host": [
+            "http://user-service:9010"
+          ],
+          "extra_config": {
+            "backend/http": {
+                "return_error_details": "user"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/v1/logout",
+      "method": "GET",
+      "extra_config": {
+        "documentation/openapi": {
+          "version": "1.0",
+          "summary": "Logout user",
+          "description": "Endpoint to logout user"
+        },
+        "auth/validator": {
+          "alg": "RS256",
+          "jwk_url": "http://oauth:8080/realms/krakend/protocol/openid-connect/certs",
+          "disable_jwk_security": true
+        }
+      },
+      "output_encoding": "fast-json",
+      "input_headers": ["Authorization"],
+      "backend": [
+        {
+          "url_pattern": "/users/logout",
+          "method": "GET",
+          "host": [
+            "http://user-service:9010"
+          ]
+        }
+      ]
+    },
+    {
+      "endpoint": "/v1/create-user",
+      "method": "POST",
+      "extra_config": {
+        "documentation/openapi": {
+          "version": "1.0",
+          "summary": "Create user",
+          "description": "Endpoint to create user"
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/users",
+          "method": "POST",
+          "host": [
+            "http://user-service:9010"
+          ],
+          "extra_config": {
+            "backend/http": {
+              "return_error_details": "user"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/v1/token",
+      "method": "POST",
+      "extra_config": {
+        "documentation/openapi": {
+          "version": "1.0",
+          "summary": "Access Token",
+          "description": "Access Token for the logged user",
+          "tags": [
+            "access_token"
+          ]
+        }
+      },
+      "output_encoding": "fast-json",
+      "backend": [
+        {
+          "url_pattern": "/realms/krakend/protocol/openid-connect/token",
+          "method": "POST",
+          "host": [
+            "http://oauth:8080"
+          ],
+          "allow": [
+            "access_token",
+            "refresh_token",
+            "expires_in"
+          ],
+          "extra_config": {
+            "backend/http": {
+              "return_error_details": "token",
+              "return_error_code": true
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "plugin": {
+    "pattern": ".so",
+    "folder": "/opt/krakend/plugins/"
+  }
+}

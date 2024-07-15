@@ -1,0 +1,45 @@
+quarkus:
+  application:
+    name: user-service
+  naming:
+    enable-jndi: true
+  http:
+    port: 9010
+    test-port: 8888
+    cors:
+      ~: false
+  container-image:
+    build: true
+    group: ${quarkus.application.name}
+    name: users
+    tag: latest
+  log:
+    level: DEBUG
+org:
+  eclipse:
+    microprofile:
+      rest:
+        client:
+          propagateHeaders: Authorization,Proxy-Authorization
+keycloak:
+  realm: ${KEYCLOAK_REALM}
+  domain: ${KEYCLOAK_SERVER_URL}
+  adminClientId: ${KEYCLOAK_ADMIN_CLIENT_ID}
+  adminClientSecret: ${KEYCLOAK_ADMIN_CLIENT_SECRET}
+  client: ${KEYCLOAK_USER_SERVICE_CLIENT_ID}
+  clientSecret: ${KEYCLOAK_USER_SERVICE_CLIENT_SECRET}
+  urls:
+    auth: ${keycloak.domain}
+
+microprofile:
+  rest:
+    client:
+      disable:
+        default:
+          mapper: false
+mp:
+  jwt:
+    verify:
+      publickey:
+        location: ${keycloak.urls.auth}/realms/${keycloak.realm}/protocol/openid-connect/certs
+      issuer: ${keycloak.urls.auth}/realms/${keycloak.realm}
