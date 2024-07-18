@@ -12,9 +12,7 @@
     "security/cors": {
       "allow_origins": ["*"],
       "allow_headers": [
-        "Content-Length",
-        "Content-Type",
-        "Authorization"
+        "*"
       ],
       "max_age": "12h",
       "debug": true

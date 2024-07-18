@@ -1,4 +1,4 @@
-# krakend-keycloak-with-react-and-quarkus
+# Krakend with Keycloak Integration - React Web App
 
 Hello, 
 
@@ -37,7 +37,7 @@ Krakend is being used with the version "3" and Keycloak at the version "24.0.3";
 
 The running container to be used is the [Podman](https://podman.io/), so let's get started.
 
-### Containers
+## Containers
 
 The project is using Podman, so first we need to create the network who is going to be used by the containers.
 
@@ -45,13 +45,13 @@ Run ```sudo podman network create krakend```
 
 Now let's create the containers for Keycloak with those commands, remember for this demo I'm using the postgres approach:
 
-- Postgres:
+### Postgres:
 
 ```sudo podman run --name postgresql -e POSTGRES_PASSWORD=password -e POSTGRES_DB=krakend -e POSTGRES_USER=krakend -p 5432:5432/tcp --net krakend --memory-reservation=2048 --restart always -v postgresql_data:/var/lib/postgresql/data -i docker.io/postgres:16```
 
-- Keycloak:
+### Keycloak:
 
-```sudo podman run --name oauth -e KC_DB=postgres -e KC_DB_USERNAME=krakend -e KC_DB_PASSWORD=password -e KC_DB_URL=jdbc:postgresql://postgresql/krakend -e KC_DB_URL_PORT=5432 -e KC_HEALTH_ENABLED=true -e KC_METRICS_ENABLED=true -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin -p 8080:8080/tcp --net krakend --restart always --requires postgresql -i quay.io/keycloak/keycloak start-dev```
+```sudo podman run --name oauth -p 8080:8080/tcp -e KC_DB=postgres -e KC_DB_USERNAME=krakend -e KC_DB_PASSWORD=password -e KC_DB_URL=jdbc:postgresql://postgresql/krakend -e KC_DB_URL_PORT=5432 -e KC_HEALTH_ENABLED=true -e KC_METRICS_ENABLED=true -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin  --net krakend --restart always --requires postgresql -i quay.io/keycloak/keycloak start-dev --http-port=8080```
 
 So now, go to http://localhost:8080 and check if the Keycloak is running and enter the username and password with "admin" to enter in your local Keycloak.
 Create your new realm for your project and keep going with your local setup.
@@ -60,14 +60,26 @@ Create your new realm for your project and keep going with your local setup.
 
 For the Krakend, you can use or not the Krakend Designer locally to generate the json, it's up to you!
 
-- Krakend:
+### Krakend:
 
-```sudo podman run --name krakend -e KRAKEND_PORT=9090 -p 9090:9090/tcp --net krakend -v krakend:/etc/krakend --entrypoint '[ "/usr/bin/krakend" ]' -i docker.io/devopsfaith/krakend:2.6-watch run --debug --config /etc/krakend/krakend.json --port 9090```
+```sudo podman run --name krakend -e KRAKEND_PORT=9090 -p 9090:9090/tcp --net krakend -v ./sandbox-tools/krakend:/etc/krakend --entrypoint '[ "/usr/bin/krakend" ]' -i docker.io/devopsfaith/krakend:2.6-watch run --debug --config /etc/krakend/krakend.json --port 9090```
 
 To access your gateway now, you can just call your gateway in the address http://localhost:9090. If you test in the browser you should see something like: "404 page not found" message.
 
-- Krakend - Designer (Optional): 
+### Krakend - Designer (Optional): 
 
 ```sudo podman run --name krakend-designer -p 8401:80/tcp --net krakend -v krakend:/etc/krakend -i docker.io/devopsfaith/krakendesigner:latest```
 
-Krakend Designer is available at http://localhost:8401, load your json or create your own configuration.
+Krakend Designer will be available at http://localhost:8401, load your json or create your own configuration.
+
+
+### User Service
+
+First we need to build the image for podman.
+
+- Build:
+```sudo podman build -f src/main/docker/Dockerfile.jvm -t user-service/users:latest .```
+
+- Run container: 
+```sudo podman run --name user-service --env-file="./sandbox-tools/sandbox.env" -p 9010:80/tcp --net krakend -i user-service/users:latest```
+
