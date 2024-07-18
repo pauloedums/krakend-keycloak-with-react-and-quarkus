@@ -1,0 +1,112 @@
+version: '3.9'
+networks:
+  krakend:
+    driver: bridge
+services:
+
+  postgresql:
+    image: postgres:16
+    environment:
+      - POSTGRES_USER=keycloak
+      - POSTGRES_DB=keycloak
+      - POSTGRES_PASSWORD=password
+    container_name: postgresql
+    mem_reservation: 2048M
+    # command: --character-set-server=utf8mb4 --collation-server=utf8mb4_0900_ai_ci --log_bin_trust_function_creators=1 --local_infile=1 --default-authentication-plugin=postgres_native_password --sql-mode="STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION" --binlog-expire-logs-seconds=86400
+    restart: always
+    security_opt:
+      - seccomp:unconfined
+    healthcheck:
+      test: ["CMD-SHELL", "psql -h 'localhost' -u root -portfolioWelcome123 ping --silent"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    volumes:
+      - 'postgresql_data:/var/lib/postgresql/data'
+    networks:
+      krakend:
+    ports:
+      - 5432:5432
+
+  oauth:
+    # image: quay.io/keycloak/keycloak
+    build: ./sandbox-tools/keycloak
+    container_name: oauth
+    restart: always
+    command: start-dev --verbose
+    depends_on:
+      - postgresql
+    environment:
+      # - KC_PROXY_ADDRESS_FORWARDING=true
+      # - KC_HOSTNAME_STRICT=false
+      # - KC_PROXY=edge
+      # - KC_HTTP_ENABLED=true
+      - KC_DB=postgres
+      - KC_DB_USERNAME=keycloak
+      - KC_DB_PASSWORD=password
+      - KC_DB_URL=jdbc:postgresql://postgresql/keycloak
+      - KC_DB_URL_HOST=postgresql
+      - KC_DB_URL_PORT=5432
+      - KC_DB_URL_DATABASE=keycloak
+      - KC_HEALTH_ENABLED=true
+      - KC_METRICS_ENABLED=true
+      # - KC_HOSTNAME=authenticator.experfolio.com
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      # - PROXY_ADDRESS_FORWARDING=true
+      # - KC_FEATURES=token-exchange,admin-fine-grained-authz
+      # - KC_SPI_THEME_DEFAULT=portfolio-maker
+    networks:
+      krakend:
+    ports:
+      - 8453:8453
+      - 8080:8080
+
+# KRAKEND ---> 
+
+  krakend:
+    image: devopsfaith/krakend:watch
+    container_name: krakend
+    ports:
+    - '9090:9090'
+    volumes:
+      - "./sandbox-tools/krakend:/etc/krakend"
+    environment:
+      KRAKEND_PORT: '9090'
+    entrypoint: [ "/usr/bin/krakend" ]
+    command: [ "run", "--debug", "--config", "/etc/krakend/krakend.json", "--port", "9090" ]
+    networks:
+      krakend:
+      
+  # krakend-designer:
+  #   image: devopsfaith/krakendesigner:latest
+  #   container_name: krakend-designer
+  #   ports:
+  #     - "8401:80"
+  #   volumes:
+  #   - ./sandbox-tools/krakend/krakend.json:/etc/krakend/krakend.json
+  #   networks:
+  #     krakend:
+
+# KRAKEND <---
+
+# Microservices --->
+
+  user-service:
+    image: user-service/users:latest
+    container_name: user-service
+    networks: 
+      krakend:
+    env_file:
+      - "./sandbox-tools/sandbox.env"
+    environment:
+      - JAVA_OPTS=-Xms1024m -Xmx2048m -Xdebug -Dspring.jackson.time-zone=UTC
+    ports:
+      - '9010:9010'
+
+# Microservices <---
+
+volumes:
+  postgresql_data:
+    driver: local
+
