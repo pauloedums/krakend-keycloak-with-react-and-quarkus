@@ -5,6 +5,8 @@ import {action as loginAction} from "./pages/LoginPage";
 import ErrorPage from "./pages/ErrorPage";
 import AuthForm from "./pages/AuthForm";
 import MemberPage from "./pages/MemberPage";
+import NotMemberPage from "./pages/NotMemberPage";
+import LogoutPage, {action as logoutAction} from "./pages/LogoutPage";
 
 export const router = createBrowserRouter([
     {
@@ -16,13 +18,22 @@ export const router = createBrowserRouter([
                 element: <HomePage />
             },
             {
-                path: 'login',
+                path: '/login',
                 element: <AuthForm />,
                 action: loginAction
             },
             {
-                path: 'member',
+                path: '/member',
                 element: <MemberPage />
+            },
+            {
+                path: '/not-member',
+                element: <NotMemberPage />
+            },
+            {
+                path: '/logout',
+                element: <LogoutPage />,
+                loader: logoutAction
             }
         ],
         errorElement: <ErrorPage />

@@ -97,31 +97,6 @@
       ]
     },
     {
-      "endpoint": "/v1/create-user",
-      "method": "POST",
-      "extra_config": {
-        "documentation/openapi": {
-          "version": "1.0",
-          "summary": "Create user",
-          "description": "Endpoint to create user"
-        }
-      },
-      "backend": [
-        {
-          "url_pattern": "/users",
-          "method": "POST",
-          "host": [
-            "http://user-service:9010"
-          ],
-          "extra_config": {
-            "backend/http": {
-              "return_error_details": "user"
-            }
-          }
-        }
-      ]
-    },
-    {
       "endpoint": "/v1/token",
       "method": "POST",
       "extra_config": {
@@ -153,6 +128,34 @@
               "return_error_code": true
             }
           }
+        }
+      ]
+    },
+    {
+      "endpoint": "/v1/token2",
+      "method": "POST",
+      "extra_config": {
+        "documentation/openapi": {
+          "version": "1.0",
+          "summary": "Access Token",
+          "description": "Access Token for the logged user",
+          "tags": [
+            "access_token"
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/realms/krakend/protocol/openid-connect/token",
+          "method": "POST",
+          "host": [
+            "http://oauth:8080"
+          ],
+          "allow": [
+            "access_token",
+            "refresh_token",
+            "expires_in"
+          ]
         }
       ]
     }

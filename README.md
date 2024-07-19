@@ -37,6 +37,10 @@ Krakend is being used with the version "3" and Keycloak at the version "24.0.3";
 
 The running container to be used is the [Podman](https://podman.io/), so let's get started.
 
+## Podman compose
+
+If you've already the podman compose installed on your machine it will be way more easy to run all containers, just hit on the terminal ```podman compose up -d```. And Start configuring the keycloak and don't forget to change variables in the keycloak configuration and on the sandbox.env.
+
 ## Containers
 
 The project is using Podman, so first we need to create the network who is going to be used by the containers.
@@ -77,9 +81,17 @@ Krakend Designer will be available at http://localhost:8401, load your json or c
 
 First we need to build the image for podman.
 
-- Build:
+- Build package:
+Enter in the folder running ``cd user-service`` then after that run ```./mvnw clean package```
+
+- Build podman service:
 ```sudo podman build -f src/main/docker/Dockerfile.jvm -t user-service/users:latest .```
 
 - Run container: 
+
+First go back to the main folder ``cd ..`` then run 
 ```sudo podman run --name user-service --env-file="./sandbox-tools/sandbox.env" -p 9010:80/tcp --net krakend -i user-service/users:latest```
 
+### FrontEnd
+
+Enter on the folder using ``cd frontend`` and first install all the dependencies with ``npm i`` then run the command for vite ``npm run dev``.

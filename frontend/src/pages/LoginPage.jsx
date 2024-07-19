@@ -81,6 +81,14 @@ export async function action({request}) {
     if (!response.ok) {
         throw json({ message: 'Could not save event.' }, { status: 500 });
     }
+
+    if(response.ok) {
+        const {access_token} = await response.json();
+        if(!access_token) {
+            return redirect('/not-member');
+        }
+        localStorage.setItem("token", access_token);
+        return redirect('/member');
+    }
     
-    return redirect('/member');
 }
