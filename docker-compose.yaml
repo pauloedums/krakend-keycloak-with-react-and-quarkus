@@ -73,20 +73,17 @@ services:
       - "./sandbox-tools/krakend:/etc/krakend"
     environment:
       KRAKEND_PORT: '9090'
-    entrypoint: [ "/usr/bin/krakend" ]
     command: [ "run", "--debug", "--config", "/etc/krakend/krakend.json", "--port", "9090" ]
     networks:
       krakend:
       
-  # krakend-designer:
-  #   image: devopsfaith/krakendesigner:latest
-  #   container_name: krakend-designer
-  #   ports:
-  #     - "8401:80"
-  #   volumes:
-  #   - ./sandbox-tools/krakend/krakend.json:/etc/krakend/krakend.json
-  #   networks:
-  #     krakend:
+  krakend-designer:
+    image: devopsfaith/krakendesigner:v2.1
+    container_name: krakend-designer
+    ports:
+      - "8401:80"
+    networks:
+      krakend:
 
 # KRAKEND <---
 

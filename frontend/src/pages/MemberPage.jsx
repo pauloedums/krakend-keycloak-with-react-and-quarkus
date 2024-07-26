@@ -28,7 +28,7 @@ export default function MemberPage() {
         <main>
             <div className="mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex mx-auto py-16 sm:py-24 lg:max-w-none lg:py-32">
-                    <div className="w-1/2 mt-6 space-y-12 lg:grid lg:grid-cols-3 lg:gap-x-6 lg:space-y-0">
+                    <div className="w-1/2 mt-6 space-y-12 lg:gap-x-6 lg:space-y-0">
                         <div className="group relative">
                             <div className="relative h-200 w-full overflow-hidden rounded-lg bg- group-hover:opacity-75">
                             <pre className="text-white text-xs">{tokenStringify}</pre>
@@ -39,7 +39,7 @@ export default function MemberPage() {
                             </h3>
                         </div>
                     </div>
-                    <div className="w-1/2 mt-6 space-y-12 lg:grid lg:grid-cols-3 lg:gap-x-6 lg:space-y-0">
+                    <div className="w-1/2 mt-6 space-y-12 lg:gap-x-6 lg:space-y-0">
                         <div className="group relative">
                             <div className="relative h-80 w-full overflow-hidden rounded-lg bg-white sm:aspect-h-1 sm:aspect-w-2 lg:aspect-h-1 lg:aspect-w-1 group-hover:opacity-75 sm:h-64">
                                 <div className="flex -space-x-2 overflow-hidden px-10 pt-10">
